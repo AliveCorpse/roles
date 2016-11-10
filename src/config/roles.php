@@ -60,7 +60,7 @@ return [
         'enabled' => false,
 
         'options' => [
-            'is' => true,
+            'isRole' => true,
             'could' => true,
             'allowed' => true,
         ],
