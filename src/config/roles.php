@@ -61,7 +61,7 @@ return [
 
         'options' => [
             'is' => true,
-            'can' => true,
+            'could' => true,
             'allowed' => true,
         ],
 
