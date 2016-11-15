@@ -35,7 +35,7 @@ class VerifyPermission
      */
     public function handle($request, Closure $next, $permission)
     {
-        if ($this->auth->check() && $this->auth->user()->can($permission)) {
+        if ($this->auth->check() && $this->auth->user()->could($permission)) {
             return $next($request);
         }
 
