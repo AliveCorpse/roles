@@ -384,8 +384,8 @@ trait HasRoleAndPermission
      */
     public function __call($method, $parameters)
     {
-        if (starts_with($method, 'is')) {
-            return $this->is(snake_case(substr($method, 2), config('roles.separator')));
+        if (starts_with($method, 'isRole')) {
+            return $this->isRole(snake_case(substr($method, 2), config('roles.separator')));
         } elseif (starts_with($method, 'could')) {
             return $this->could(snake_case(substr($method, 3), config('roles.separator')));
         } elseif (starts_with($method, 'allowed')) {
