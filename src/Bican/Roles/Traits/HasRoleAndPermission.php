@@ -47,6 +47,7 @@ trait HasRoleAndPermission
      *
      * @param int|string|array $role
      * @param bool $all
+     *
      * @return bool
      */
     public function isRole($role, $all = false)
@@ -62,6 +63,7 @@ trait HasRoleAndPermission
      * Check if the user has at least one role.
      *
      * @param int|string|array $role
+     *
      * @return bool
      */
     public function isOne($role)
@@ -79,6 +81,7 @@ trait HasRoleAndPermission
      * Check if the user has all roles.
      *
      * @param int|string|array $role
+     *
      * @return bool
      */
     public function isAll($role)
@@ -96,6 +99,7 @@ trait HasRoleAndPermission
      * Check if the user has role.
      *
      * @param int|string $role
+     *
      * @return bool
      */
     public function hasRole($role)
@@ -109,6 +113,7 @@ trait HasRoleAndPermission
      * Attach role to a user.
      *
      * @param int|\Bican\Roles\Models\Role $role
+     *
      * @return null|bool
      */
     public function attachRole($role)
@@ -120,6 +125,7 @@ trait HasRoleAndPermission
      * Detach role from a user.
      *
      * @param int|\Bican\Roles\Models\Role $role
+     *
      * @return int
      */
     public function detachRole($role)
@@ -159,15 +165,24 @@ trait HasRoleAndPermission
     public function rolePermissions()
     {
         $permissionModel = app(config('roles.models.permission'));
+        $enableInheriting = config('roles.inherit');
 
         if (!$permissionModel instanceof Model) {
             throw new InvalidArgumentException('[roles.models.permission] must be an instance of \Illuminate\Database\Eloquent\Model');
         }
 
-        return $permissionModel::select(['permissions.*', 'permission_role.created_at as pivot_created_at', 'permission_role.updated_at as pivot_updated_at'])
-                ->join('permission_role', 'permission_role.permission_id', '=', 'permissions.id')->join('roles', 'roles.id', '=', 'permission_role.role_id')
-                ->whereIn('roles.id', $this->getRoles()->pluck('id')->toArray()) ->orWhere('roles.level', '<', $this->level())
-                ->groupBy(['permissions.id', 'pivot_created_at', 'pivot_updated_at']);
+        return $permissionModel::select([
+            'permissions.*',
+            'permission_role.created_at as pivot_created_at',
+            'permission_role.updated_at as pivot_updated_at',
+        ])
+            ->join('permission_role', 'permission_role.permission_id', '=', 'permissions.id')
+            ->join('roles', 'roles.id', '=', 'permission_role.role_id')
+            ->whereIn('roles.id', $this->getRoles()->pluck('id')->toArray())
+            ->when($enableInheriting, function ($query) {
+                return $query->orWhere('roles.level', '<', $this->level());
+            })
+            ->groupBy(['permissions.id', 'pivot_created_at', 'pivot_updated_at']);
     }
 
     /**
@@ -187,7 +202,9 @@ trait HasRoleAndPermission
      */
     public function getPermissions()
     {
-        return (!$this->permissions) ? $this->permissions = $this->rolePermissions()->get()->merge($this->userPermissions()->get()) : $this->permissions;
+        return (!$this->permissions)
+            ? $this->permissions = $this->rolePermissions()->get()->merge($this->userPermissions()->get())
+            : $this->permissions;
     }
 
     /**
@@ -195,6 +212,7 @@ trait HasRoleAndPermission
      *
      * @param int|string|array $permission
      * @param bool $all
+     *
      * @return bool
      */
     public function could($permission, $all = false)
@@ -210,6 +228,7 @@ trait HasRoleAndPermission
      * Check if the user has at least one permission.
      *
      * @param int|string|array $permission
+     *
      * @return bool
      */
     public function couldOne($permission)
@@ -227,6 +246,7 @@ trait HasRoleAndPermission
      * Check if the user has all permissions.
      *
      * @param int|string|array $permission
+     *
      * @return bool
      */
     public function couldAll($permission)
@@ -244,6 +264,7 @@ trait HasRoleAndPermission
      * Check if the user has a permission.
      *
      * @param int|string $permission
+     *
      * @return bool
      */
     public function hasPermission($permission)
@@ -260,6 +281,7 @@ trait HasRoleAndPermission
      * @param \Illuminate\Database\Eloquent\Model $entity
      * @param bool $owner
      * @param string $ownerColumn
+     *
      * @return bool
      */
     public function allowed($providedPermission, Model $entity, $owner = true, $ownerColumn = 'user_id')
@@ -280,6 +302,7 @@ trait HasRoleAndPermission
      *
      * @param string $providedPermission
      * @param \Illuminate\Database\Eloquent\Model $entity
+     *
      * @return bool
      */
     protected function isAllowed($providedPermission, Model $entity)
@@ -299,6 +322,7 @@ trait HasRoleAndPermission
      * Attach permission to a user.
      *
      * @param int|\Bican\Roles\Models\Permission $permission
+     *
      * @return null|bool
      */
     public function attachPermission($permission)
@@ -310,6 +334,7 @@ trait HasRoleAndPermission
      * Detach permission from a user.
      *
      * @param int|\Bican\Roles\Models\Permission $permission
+     *
      * @return int
      */
     public function detachPermission($permission)
@@ -345,11 +370,12 @@ trait HasRoleAndPermission
      * Allows to pretend or simulate package behavior.
      *
      * @param string $option
+     *
      * @return bool
      */
     private function pretend($option)
     {
-        return (bool) config('roles.pretend.options.' . $option);
+        return (bool) config('roles.pretend.options.'.$option);
     }
 
     /**
@@ -357,17 +383,19 @@ trait HasRoleAndPermission
      *
      * @param string $methodName
      * @param bool $all
+     *
      * @return string
      */
     private function getMethodName($methodName, $all)
     {
-        return ((bool) $all) ? $methodName . 'All' : $methodName . 'One';
+        return ((bool) $all) ? $methodName.'All' : $methodName.'One';
     }
 
     /**
      * Get an array from argument.
      *
      * @param int|string|array $argument
+     *
      * @return array
      */
     private function getArrayFrom($argument)
@@ -380,6 +408,7 @@ trait HasRoleAndPermission
      *
      * @param string $method
      * @param array $parameters
+     *
      * @return mixed
      */
     public function __call($method, $parameters)
@@ -389,7 +418,8 @@ trait HasRoleAndPermission
         } elseif (starts_with($method, 'could')) {
             return $this->could(snake_case(substr($method, 3), config('roles.separator')));
         } elseif (starts_with($method, 'allowed')) {
-            return $this->allowed(snake_case(substr($method, 7), config('roles.separator')), $parameters[0], (isset($parameters[1])) ? $parameters[1] : true, (isset($parameters[2])) ? $parameters[2] : 'user_id');
+            return $this->allowed(snake_case(substr($method, 7), config('roles.separator')), $parameters[0],
+                (isset($parameters[1])) ? $parameters[1] : true, (isset($parameters[2])) ? $parameters[2] : 'user_id');
         }
 
         return parent::__call($method, $parameters);

@@ -29,6 +29,18 @@ return [
     'separator' => '.',
 
     /*
+   |--------------------------------------------------------------------------
+   | Inheriting
+   |--------------------------------------------------------------------------
+   |
+   | If you want, you can disable inheriting permissions by level. By default
+   | Role with higher level is inheriting permission from roles with lower level.
+   |
+   */
+
+    'inherit' => true,
+
+    /*
     |--------------------------------------------------------------------------
     | Models
     |--------------------------------------------------------------------------
@@ -40,7 +52,7 @@ return [
     */
 
     'models' => [
-        'role' => Bican\Roles\Models\Role::class,
+        'role'       => Bican\Roles\Models\Role::class,
         'permission' => Bican\Roles\Models\Permission::class,
     ],
 
@@ -60,8 +72,8 @@ return [
         'enabled' => false,
 
         'options' => [
-            'isRole' => true,
-            'could' => true,
+            'isRole'  => true,
+            'could'   => true,
             'allowed' => true,
         ],
 
